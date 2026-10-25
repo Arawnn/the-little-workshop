@@ -7,7 +7,7 @@ def test_distance_equal_5():
     b = Vec3(3,4,0)
 
     d = distance(a,b)
-    assert d == 5.0
+    assert d == pytest.approx(5.0)
 
 def test_distance_with_same_point():
     a = Vec3(5,0,0)
