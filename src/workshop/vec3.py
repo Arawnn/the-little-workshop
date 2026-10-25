@@ -12,4 +12,4 @@ class Vec3:
 
 
 def distance(a: Vec3, b: Vec3) -> float:
-    return math.dist(a.get_point(), b.get_point())
+    return math.dist(a.as_tuple(), b.as_tuple())
