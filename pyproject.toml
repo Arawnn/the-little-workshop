@@ -12,3 +12,8 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-name = "workshop"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
