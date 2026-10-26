@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from dataclasses import dataclass, field
 from multiprocessing import Value
+import uuid
 from workshop.vec3 import Vec3
 
 REACH = 1.5
@@ -36,7 +37,7 @@ class Robot:
     position: Vec3
     state: RobotState
     target_machine_id: str | None = None
-    current_action_id: str | None = None
+    current_action_id: uuid.UUID | None = None
 
 @dataclass
 class World:
