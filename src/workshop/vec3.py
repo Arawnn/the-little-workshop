@@ -1,5 +1,6 @@
+import math
 from dataclasses import dataclass
-import math 
+
 
 @dataclass(frozen=True)
 class Vec3:

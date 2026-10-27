@@ -1,6 +1,9 @@
-from workshop.vec3 import Vec3, distance
-import pytest
 from dataclasses import FrozenInstanceError
+
+import pytest
+
+from workshop.vec3 import Vec3, distance
+
 
 def test_distance_equal_5():
     a = Vec3(0,0,0)

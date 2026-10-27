@@ -1,8 +1,9 @@
+import uuid
 from dataclasses import dataclass
 from enum import Enum, auto
-import uuid
 
 from workshop.vec3 import Vec3
+
 
 class EventType(Enum):
     MACHINE_BROKE = "machine.broke"

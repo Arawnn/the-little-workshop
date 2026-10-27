@@ -1,7 +1,10 @@
-from workshop.world import World, diagnose, Diagnostic, REACH
-from workshop.vec3 import distance
-import pytest
 from dataclasses import replace
+
+import pytest
+
+from workshop.vec3 import distance
+from workshop.world import REACH, Diagnostic, World, diagnose
+
 
 def test_worlds_are_different():
     w1 = World()

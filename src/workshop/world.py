@@ -1,6 +1,7 @@
-from enum import Enum, auto
-from dataclasses import dataclass, field
 import uuid
+from dataclasses import dataclass, field
+from enum import Enum, auto
+
 from workshop.vec3 import Vec3
 
 REACH = 1.5
