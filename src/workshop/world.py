@@ -1,6 +1,5 @@
 from enum import Enum, auto
 from dataclasses import dataclass, field
-from multiprocessing import Value
 import uuid
 from workshop.vec3 import Vec3
 
@@ -24,7 +23,7 @@ class Diagnostic(Enum):
 
 @dataclass
 class Machine:
-    id: str
+    id: uuid.UUID
     position: Vec3
     poi: Vec3
     wear: int
@@ -33,21 +32,21 @@ class Machine:
 
 @dataclass
 class Robot:
-    id: str
+    id: uuid.UUID
     position: Vec3
     state: RobotState
-    target_machine_id: str | None = None
+    target_machine_id: uuid.UUID | None = None
     current_action_id: uuid.UUID | None = None
 
 @dataclass
 class World:
     robot: Robot = field(default_factory=lambda: Robot(
-        id='robot-001',
+        id=uuid.uuid4(),
         position= Vec3(0,0,0),
         state=RobotState.IDLE
     ))
     machine: Machine = field(default_factory=lambda: Machine(
-        id="machine-001",
+        id=uuid.uuid4(),
         position=Vec3(4,0,0),
         poi=Vec3(3,0,0),
         wear=0,
