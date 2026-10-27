@@ -24,7 +24,7 @@ class RobotStateHandler(ABC):
 
 
 class IdleState(RobotStateHandler):
-    def handle(self, world: World, event: Event):
+    def handle(self, world: World, event: Event) -> Transition | Reject | None:
         if event.type != EventType.MACHINE_BROKE:
             return None
 
@@ -42,7 +42,7 @@ class IdleState(RobotStateHandler):
             return Transition(
                 target=RobotState.INSPECTING,
                 action=action,
-                reason=f"robot at {d}m"
+                reason=f"robot at {d:.2f}m"
             )
         else:
             action = Action(
@@ -54,7 +54,7 @@ class IdleState(RobotStateHandler):
             return Transition(
                 RobotState.MOVING,
                 action,
-                f"robot at {d}m"
+                f"robot at {d:.2f}m"
             )
 
 
@@ -64,7 +64,7 @@ class RobotStateMachine:
             RobotState.IDLE: IdleState()
         }
     
-    def handle(self, world: World, event: Event):
+    def handle(self, world: World, event: Event) -> Transition | Reject | None:
         state = world.robot.state
         handler = self.handlers[state]
         result = handler.handle(world, event)

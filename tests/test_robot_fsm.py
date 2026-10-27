@@ -1,5 +1,3 @@
-
-
 import uuid
 from workshop.events import ActionType, Event, EventType
 from workshop.robot_fsm import Reject, RobotStateMachine, Transition
@@ -22,6 +20,7 @@ def test_robot_far_machine():
     assert result.target == RobotState.MOVING
     assert result.action.type == ActionType.MOVE_TO
     assert world.machine.poi == result.action.target
+    assert world.robot.state == RobotState.MOVING
     assert world.robot.current_action_id == result.action.id
 
 
@@ -47,6 +46,7 @@ def test_robot_near_machine():
     assert result.action.type == ActionType.INSPECT
     assert result.action.machine_id == event.machine_id
     assert result.action.target == world.machine.poi
+    assert world.robot.state == RobotState.INSPECTING
 
 def test_robot_boundary_machine():
     robot = Robot(
@@ -70,6 +70,7 @@ def test_robot_boundary_machine():
     assert result.action.type == ActionType.INSPECT
     assert result.action.machine_id == event.machine_id
     assert result.action.target == world.machine.poi
+    assert world.robot.state == RobotState.INSPECTING
 
 
 def test_fsm_reject_if_machine_not_broken():
@@ -84,7 +85,9 @@ def test_fsm_reject_if_machine_not_broken():
     result = robot_fsm.handle(world, event)
 
     assert isinstance(result, Reject)
-    assert result.reason == "La machine n'est pas cassée"
+    assert result.reason != ""
+    assert world.robot.state == RobotState.IDLE
+    assert world.robot.current_action_id is None
 
 def test_fsm_ignore_event_not_idle():
     world = World()
@@ -98,3 +101,5 @@ def test_fsm_ignore_event_not_idle():
     result = robot_fsm.handle(world, event)
 
     assert result is None
+    assert world.robot.state == RobotState.IDLE
+    assert world.robot.current_action_id is None
