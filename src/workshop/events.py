@@ -9,16 +9,19 @@ class EventType(Enum):
     MACHINE_BROKE = "machine.broke"
     ACTION_COMPLETED = "action.completed"
 
+
 @dataclass(frozen=True)
 class Event:
     type: EventType
     machine_id: uuid.UUID
     action_id: uuid.UUID | None = None
 
+
 class ActionType(Enum):
     MOVE_TO = auto()
     INSPECT = auto()
     REPAIR = auto()
+
 
 @dataclass(frozen=True)
 class Action:
@@ -26,4 +29,3 @@ class Action:
     type: ActionType
     machine_id: uuid.UUID
     target: Vec3 | None = None
-

@@ -32,6 +32,7 @@ def action_completed(world: World, action_id: uuid.UUID | None) -> Event:
 
 # --- idle ---
 
+
 def test_fsm_idle_state_robot_far():
     world = make_world()
 
@@ -96,6 +97,7 @@ def test_fsm_idle_state_ignore_action_completed():
 
 # --- moving ---
 
+
 def test_fsm_moving_state():
     action_id = uuid.uuid4()
     world = make_world(RobotState.MOVING, position=Vec3(5, 0, 0), action_id=action_id)
@@ -142,6 +144,7 @@ def test_fsm_moving_state_reject_if_robot_too_far():
 
 
 # --- inspecting ---
+
 
 def test_fsm_inspecting_state():
     action_id = uuid.uuid4()
@@ -219,6 +222,7 @@ def test_fsm_inspecting_state_reject_if_diagnostic_is_none():
 
 # --- repairing ---
 
+
 def test_fsm_repairing_state():
     action_id = uuid.uuid4()
     world = make_world(
@@ -246,6 +250,7 @@ def test_fsm_repairing_state_reject_if_machine_not_running():
     assert result.reason != ""
     assert world.robot.state == RobotState.REPAIRING
     assert world.robot.current_action_id == action_id
+
 
 def test_fsm_repairing_state_reject_if_action_id_not_correspond():
     current_id = uuid.uuid4()

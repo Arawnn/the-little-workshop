@@ -21,8 +21,7 @@ class Reject:
 
 class RobotStateHandler(ABC):
     @abstractmethod
-    def handle(self, world: World, event: Event) -> Transition | Reject | None:
-        ...
+    def handle(self, world: World, event: Event) -> Transition | Reject | None: ...
 
     def _is_current_action(self, world: World, event: Event) -> bool:
         return world.robot.current_action_id == event.action_id
@@ -98,7 +97,9 @@ class InspectingState(RobotStateHandler):
 
         d = distance(world.robot.position, world.machine.position)
         if d > REACH:
-            return Reject(f"Réparation impossible : robot trop loin de la machine, distance : {d:.2f} m")
+            return Reject(
+                f"Réparation impossible : robot trop loin de la machine, distance : {d:.2f} m"
+            )
 
         if world.machine.diagnostic is None:
             return Reject("Réparation impossible : aucun diagnostic connu pour la machine")
