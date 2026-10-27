@@ -6,22 +6,6 @@ from workshop.vec3 import Vec3
 from workshop.world import Diagnostic, MachineState, RobotState, World
 
 
-def make_world(
-    robot_state: RobotState = RobotState.IDLE,
-    position: Vec3 = Vec3(0, 0, 0),
-    action_id: uuid.UUID | None = None,
-    machine_state: MachineState = MachineState.BROKEN,
-    diagnostic: Diagnostic | None = None,
-) -> World:
-    world = World()
-    world.robot.state = robot_state
-    world.robot.position = position
-    world.robot.current_action_id = action_id
-    world.machine.state = machine_state
-    world.machine.diagnostic = diagnostic
-    return world
-
-
 def machine_broke(world: World) -> Event:
     return Event(type=EventType.MACHINE_BROKE, machine_id=world.machine.id)
 
@@ -33,7 +17,7 @@ def action_completed(world: World, action_id: uuid.UUID | None) -> Event:
 # --- idle ---
 
 
-def test_fsm_idle_state_robot_far():
+def test_fsm_idle_state_robot_far(make_world):
     world = make_world()
 
     result = RobotStateMachine().handle(world, machine_broke(world))
@@ -46,7 +30,7 @@ def test_fsm_idle_state_robot_far():
     assert world.robot.current_action_id == result.action.id
 
 
-def test_fsm_idle_state_robot_near():
+def test_fsm_idle_state_robot_near(make_world):
     world = make_world(position=Vec3(3.5, 0, 0))
     event = machine_broke(world)
 
@@ -60,7 +44,7 @@ def test_fsm_idle_state_robot_near():
     assert world.robot.state == RobotState.INSPECTING
 
 
-def test_fsm_idle_state_robot_boundary():
+def test_fsm_idle_state_robot_boundary(make_world):
     world = make_world(position=Vec3(5.5, 0, 0))
     event = machine_broke(world)
 
@@ -74,7 +58,7 @@ def test_fsm_idle_state_robot_boundary():
     assert world.robot.state == RobotState.INSPECTING
 
 
-def test_fsm_idle_state_reject_if_machine_not_broken():
+def test_fsm_idle_state_reject_if_machine_not_broken(make_world):
     world = make_world(machine_state=MachineState.RUNNING)
 
     result = RobotStateMachine().handle(world, machine_broke(world))
@@ -85,7 +69,7 @@ def test_fsm_idle_state_reject_if_machine_not_broken():
     assert world.robot.current_action_id is None
 
 
-def test_fsm_idle_state_ignore_action_completed():
+def test_fsm_idle_state_ignore_action_completed(make_world):
     world = make_world()
 
     result = RobotStateMachine().handle(world, action_completed(world, None))
@@ -98,7 +82,7 @@ def test_fsm_idle_state_ignore_action_completed():
 # --- moving ---
 
 
-def test_fsm_moving_state():
+def test_fsm_moving_state(make_world):
     action_id = uuid.uuid4()
     world = make_world(RobotState.MOVING, position=Vec3(5, 0, 0), action_id=action_id)
 
@@ -109,7 +93,7 @@ def test_fsm_moving_state():
     assert world.robot.current_action_id == result.action.id
 
 
-def test_fsm_moving_state_ignore_machine_broke():
+def test_fsm_moving_state_ignore_machine_broke(make_world):
     world = make_world(RobotState.MOVING)
 
     result = RobotStateMachine().handle(world, machine_broke(world))
@@ -119,7 +103,7 @@ def test_fsm_moving_state_ignore_machine_broke():
     assert world.robot.current_action_id is None
 
 
-def test_fsm_moving_state_reject_if_action_id_not_correspond():
+def test_fsm_moving_state_reject_if_action_id_not_correspond(make_world):
     current_id = uuid.uuid4()
     world = make_world(RobotState.MOVING, action_id=current_id)
 
@@ -131,7 +115,7 @@ def test_fsm_moving_state_reject_if_action_id_not_correspond():
     assert world.robot.current_action_id == current_id
 
 
-def test_fsm_moving_state_reject_if_robot_too_far():
+def test_fsm_moving_state_reject_if_robot_too_far(make_world):
     action_id = uuid.uuid4()
     world = make_world(RobotState.MOVING, position=Vec3(9, 0, 0), action_id=action_id)
 
@@ -146,7 +130,7 @@ def test_fsm_moving_state_reject_if_robot_too_far():
 # --- inspecting ---
 
 
-def test_fsm_inspecting_state():
+def test_fsm_inspecting_state(make_world):
     action_id = uuid.uuid4()
     world = make_world(
         RobotState.INSPECTING,
@@ -163,7 +147,7 @@ def test_fsm_inspecting_state():
     assert world.robot.current_action_id == result.action.id
 
 
-def test_fsm_inspecting_state_robot_boundary():
+def test_fsm_inspecting_state_robot_boundary(make_world):
     action_id = uuid.uuid4()
     world = make_world(
         RobotState.INSPECTING,
@@ -179,7 +163,7 @@ def test_fsm_inspecting_state_robot_boundary():
     assert world.robot.current_action_id == result.action.id
 
 
-def test_fsm_inspecting_state_reject_if_action_id_not_correspond():
+def test_fsm_inspecting_state_reject_if_action_id_not_correspond(make_world):
     current_id = uuid.uuid4()
     world = make_world(RobotState.INSPECTING, action_id=current_id)
 
@@ -191,7 +175,7 @@ def test_fsm_inspecting_state_reject_if_action_id_not_correspond():
     assert world.robot.current_action_id == current_id
 
 
-def test_fsm_inspecting_state_reject_if_robot_too_far():
+def test_fsm_inspecting_state_reject_if_robot_too_far(make_world):
     action_id = uuid.uuid4()
     world = make_world(
         RobotState.INSPECTING,
@@ -208,7 +192,7 @@ def test_fsm_inspecting_state_reject_if_robot_too_far():
     assert world.robot.current_action_id == action_id
 
 
-def test_fsm_inspecting_state_reject_if_diagnostic_is_none():
+def test_fsm_inspecting_state_reject_if_diagnostic_is_none(make_world):
     action_id = uuid.uuid4()
     world = make_world(RobotState.INSPECTING, position=Vec3(5, 0, 0), action_id=action_id)
 
@@ -223,7 +207,7 @@ def test_fsm_inspecting_state_reject_if_diagnostic_is_none():
 # --- repairing ---
 
 
-def test_fsm_repairing_state():
+def test_fsm_repairing_state(make_world):
     action_id = uuid.uuid4()
     world = make_world(
         RobotState.REPAIRING,
@@ -240,7 +224,7 @@ def test_fsm_repairing_state():
     assert world.robot.current_action_id is None
 
 
-def test_fsm_repairing_state_reject_if_machine_not_running():
+def test_fsm_repairing_state_reject_if_machine_not_running(make_world):
     action_id = uuid.uuid4()
     world = make_world(RobotState.REPAIRING, position=Vec3(5, 0, 0), action_id=action_id)
 
@@ -252,7 +236,7 @@ def test_fsm_repairing_state_reject_if_machine_not_running():
     assert world.robot.current_action_id == action_id
 
 
-def test_fsm_repairing_state_reject_if_action_id_not_correspond():
+def test_fsm_repairing_state_reject_if_action_id_not_correspond(make_world):
     current_id = uuid.uuid4()
     world = make_world(RobotState.REPAIRING, action_id=current_id)
 
