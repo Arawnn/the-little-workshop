@@ -1,18 +1,19 @@
+import uuid
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-import uuid
 from workshop.events import Action, ActionType, Event, EventType
 from workshop.vec3 import distance
-from workshop.world import REACH, MachineState, Robot, RobotState, World, diagnose
-from abc import ABC, abstractmethod
+from workshop.world import REACH, MachineState, RobotState, World
+
 
 @dataclass(frozen=True)
 class Transition:
     target: RobotState
     reason: str
     action: Action | None = None
-    
-    
+
+
 @dataclass(frozen=True)
 class Reject:
     reason: str
@@ -23,6 +24,22 @@ class RobotStateHandler(ABC):
     def handle(self, world: World, event: Event) -> Transition | Reject | None:
         ...
 
+    def _is_current_action(self, world: World, event: Event) -> bool:
+        return world.robot.current_action_id == event.action_id
+
+    def _start_inspection(self, world: World, event: Event, dist: float) -> Transition:
+        action = Action(
+            id=uuid.uuid4(),
+            type=ActionType.INSPECT,
+            machine_id=event.machine_id,
+            target=world.machine.poi,
+        )
+        return Transition(
+            target=RobotState.INSPECTING,
+            action=action,
+            reason=f"robot à {dist:.2f} m",
+        )
+
 
 class IdleState(RobotStateHandler):
     def handle(self, world: World, event: Event) -> Transition | Reject | None:
@@ -31,108 +48,88 @@ class IdleState(RobotStateHandler):
 
         if world.machine.state != MachineState.BROKEN:
             return Reject("La machine n'est pas cassée")
-        
+
         d = distance(world.robot.position, world.machine.position)
         if d <= REACH:
-            action = Action(
-                id=uuid.uuid4(),
-                type=ActionType.INSPECT,
-                machine_id=event.machine_id,
-                target=world.machine.poi
-            )
-            return Transition(
-                target=RobotState.INSPECTING,
-                action=action,
-                reason=f"robot at {d:.2f}m"
-            )
-        else:
-            action = Action(
-                id=uuid.uuid4(),
-                type=ActionType.MOVE_TO,
-                machine_id=event.machine_id,
-                target=world.machine.poi
-            )
-            return Transition(
-                target=RobotState.MOVING,
-                action=action,
-                reason=f"robot at {d:.2f}m"
-            )
+            return self._start_inspection(world, event, d)
+
+        action = Action(
+            id=uuid.uuid4(),
+            type=ActionType.MOVE_TO,
+            machine_id=event.machine_id,
+            target=world.machine.poi,
+        )
+        return Transition(
+            target=RobotState.MOVING,
+            action=action,
+            reason=f"robot à {d:.2f} m",
+        )
+
 
 class MovingState(RobotStateHandler):
     def handle(self, world: World, event: Event) -> Transition | Reject | None:
-        # ignore si l'action n'est pas completed
         if event.type != EventType.ACTION_COMPLETED:
             return None
-        if event.action_id != world.robot.current_action_id:
-            return Reject("L'action reçu ne correspond pas à l'action courante du robot.")
-        # reject si la machine n'est pas broken
+
+        if not self._is_current_action(world, event):
+            return Reject("L'action reçue ne correspond pas à l'action en cours du robot")
+
         if world.machine.state != MachineState.BROKEN:
             return Reject("La machine n'est pas cassée")
 
         d = distance(world.robot.position, world.machine.position)
-        # si le robot est a 1,5m ou moins alors lancer une action 
         if d <= REACH:
-            action = Action(
-                id=uuid.uuid4(),
-                type=ActionType.INSPECT,
-                machine_id=event.machine_id,
-                target=world.machine.poi
-            )
-            return Transition(
-                target=RobotState.INSPECTING,
-                action=action,
-                reason=f"robot at {d:.2f}m"
-            )
-        else:
-            # Pas encore de politique de reprise pour le scénario nominal
-            return Reject(f"Le roboto n'a pas réussi à atteindre la machine, distance: {d:.2f}m")
-        
-    
+            return self._start_inspection(world, event, d)
+
+        # Pas encore de politique de reprise dans le scénario nominal
+        return Reject(f"Le robot n'a pas atteint la machine, distance : {d:.2f} m")
+
+
 class InspectingState(RobotStateHandler):
     def handle(self, world: World, event: Event) -> Transition | Reject | None:
         if event.type != EventType.ACTION_COMPLETED:
             return None
 
-        if event.action_id != world.robot.current_action_id:
-            return Reject("L'action reçu ne correspond pas à l'action courante du robot.")
+        if not self._is_current_action(world, event):
+            return Reject("L'action reçue ne correspond pas à l'action en cours du robot")
 
         if world.machine.state != MachineState.BROKEN:
             return Reject("La machine n'est pas cassée")
 
         d = distance(world.robot.position, world.machine.position)
         if d > REACH:
-            return Reject(f"Impossible de lancer le repair. Le robot est trop loin de la machine, distance: {d:.2f}")
+            return Reject(f"Réparation impossible : robot trop loin de la machine, distance : {d:.2f} m")
 
         if world.machine.diagnostic is None:
-            return Reject("Impossible de lancer le repair. Aucun diagnostic connu n'a été détecté sur la machine")
-            
+            return Reject("Réparation impossible : aucun diagnostic connu pour la machine")
+
         action = Action(
             id=uuid.uuid4(),
             type=ActionType.REPAIR,
-            machine_id=event.machine_id
+            machine_id=event.machine_id,
         )
         return Transition(
             target=RobotState.REPAIRING,
             action=action,
-            reason=f"diagnostic: {world.machine.diagnostic}"
+            reason=f"diagnostic : {world.machine.diagnostic.name}",
         )
-        
+
+
 class RepairingState(RobotStateHandler):
     def handle(self, world: World, event: Event) -> Transition | Reject | None:
         if event.type != EventType.ACTION_COMPLETED:
             return None
 
-        if event.action_id != world.robot.current_action_id:
-            return Reject("L'action reçu ne correspond pas à l'action courante du robot.")
+        if not self._is_current_action(world, event):
+            return Reject("L'action reçue ne correspond pas à l'action en cours du robot")
+
         if world.machine.state != MachineState.RUNNING:
-            return Reject("La machine n'est pas en marche")
-        
+            return Reject("Réparation échouée : la machine n'est pas en marche")
 
         return Transition(
             target=RobotState.IDLE,
-            reason="machine réparée"
+            reason="machine réparée",
         )
-
 
 
 class RobotStateMachine:
@@ -141,22 +138,13 @@ class RobotStateMachine:
             RobotState.IDLE: IdleState(),
             RobotState.MOVING: MovingState(),
             RobotState.INSPECTING: InspectingState(),
-            RobotState.REPAIRING: RepairingState()
+            RobotState.REPAIRING: RepairingState(),
         }
-    
+
     def handle(self, world: World, event: Event) -> Transition | Reject | None:
-        state = world.robot.state
-        handler = self.handlers[state]
+        handler = self.handlers[world.robot.state]
         result = handler.handle(world, event)
         if isinstance(result, Transition):
             world.robot.state = result.target
-            if result.action is not None:
-                world.robot.current_action_id = result.action.id
-            else:
-                world.robot.current_action_id = None
+            world.robot.current_action_id = result.action.id if result.action is not None else None
         return result
-
-        
-
-        
-            
