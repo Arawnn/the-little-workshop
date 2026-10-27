@@ -247,7 +247,7 @@ def test_fsm_repairing_state_reject_if_machine_not_running():
     assert world.robot.state == RobotState.REPAIRING
     assert world.robot.current_action_id == action_id
 
-def test_fsm_inspecting_state_reject_if_action_id_not_correspond():
+def test_fsm_repairing_state_reject_if_action_id_not_correspond():
     current_id = uuid.uuid4()
     world = make_world(RobotState.REPAIRING, action_id=current_id)
 
