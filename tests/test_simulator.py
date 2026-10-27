@@ -64,7 +64,7 @@ def test_simulator_scenario_unknown_action(make_world):
     trace = sim.run(Event(EventType.ACTION_COMPLETED, world.machine.id, uuid.uuid4()))
 
     assert len(trace) == 1
-    assert isinstance(trace.pop().outcome, Reject)
+    assert isinstance(trace[0].outcome, Reject)
 
     assert world.robot.state == RobotState.MOVING
 
