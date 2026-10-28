@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
+from workshop.actions import Action, ActionType
 from workshop.effects import apply_completion_effect, apply_start_effect
-from workshop.events import Action, ActionType
 from workshop.world import Diagnostic, MachineState
 
 

@@ -1,7 +1,8 @@
 import uuid
 from collections import deque
 
-from workshop.events import Action, ActionType, EventType
+from workshop.actions import Action, ActionType
+from workshop.events import EventType
 from workshop.executor import ActionExecutor
 from workshop.world import MachineState
 

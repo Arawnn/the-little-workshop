@@ -1,6 +1,7 @@
 import uuid
 
-from workshop.events import ActionType, Event, EventType
+from workshop.actions import ActionType
+from workshop.events import Event, EventType
 from workshop.robot_fsm import Reject, RobotStateMachine, Transition
 from workshop.vec3 import Vec3
 from workshop.world import Diagnostic, MachineState, RobotState, World

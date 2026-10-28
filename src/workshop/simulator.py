@@ -2,8 +2,9 @@ import uuid
 from collections import deque
 from dataclasses import dataclass
 
+from workshop.actions import Action
 from workshop.effects import apply_completion_effect
-from workshop.events import Action, Event, EventType
+from workshop.events import Event, EventType
 from workshop.executor import ActionExecutor
 from workshop.robot_fsm import Reject, RobotStateMachine, Transition
 from workshop.world import MachineState, RobotState, World

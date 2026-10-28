@@ -1,4 +1,4 @@
-from workshop.events import Action, ActionType
+from workshop.actions import Action, ActionType
 from workshop.world import MachineState, World, diagnose
 
 

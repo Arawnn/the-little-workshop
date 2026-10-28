@@ -1,8 +1,9 @@
 import uuid
 from collections import deque
 
+from workshop.actions import Action
 from workshop.effects import apply_start_effect
-from workshop.events import Action, Event, EventType
+from workshop.events import Event, EventType
 from workshop.world import World
 
 

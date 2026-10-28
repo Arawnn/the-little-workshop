@@ -2,7 +2,8 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from workshop.events import Action, ActionType, Event, EventType
+from workshop.actions import Action, ActionType
+from workshop.events import Event, EventType
 from workshop.vec3 import distance
 from workshop.world import REACH, MachineState, RobotState, World
 
