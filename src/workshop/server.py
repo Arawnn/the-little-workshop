@@ -1,4 +1,7 @@
+import asyncio
+
 from fastapi import FastAPI
+from fastapi.sse import EventSourceResponse
 from pydantic import BaseModel, Field
 
 from workshop.serialize import entry_to_dict
@@ -8,10 +11,25 @@ from workshop.world import World
 
 app = FastAPI()
 
+client_queue = {}
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+
+@app.get("/events", response_class=EventSourceResponse)
+async def events():
+    queue = asyncio.Queue()
+    client_id = id(queue)
+    client_queue[client_id] = queue
+    try: 
+        while True:    
+            event = await queue.get()
+            yield event
+    finally:
+        client_queue.pop(client_id)
 
 
 class LeverOptions(BaseModel):
@@ -20,7 +38,7 @@ class LeverOptions(BaseModel):
 
 
 @app.post("/lever")
-def lever(options: LeverOptions) -> dict[str, list[dict[str, str | None]]]:
+async def lever(options: LeverOptions) -> dict[str, list[dict[str, str | None]]]:
     world = World()
     if options.near:
         world.robot.position = Vec3(3.5, 0, 0)
@@ -32,4 +50,10 @@ def lever(options: LeverOptions) -> dict[str, list[dict[str, str | None]]]:
 
     traces = sim.run(sim.pull_lever())
 
-    return {"trace": [entry_to_dict(e) for e in traces]}
+    entries = [entry_to_dict(e) for e in traces]
+
+    for entry in entries:
+        for queue in client_queue.values():
+            queue.put_nowait(entry)
+
+    return {"trace": entries}
