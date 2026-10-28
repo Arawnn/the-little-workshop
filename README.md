@@ -9,7 +9,7 @@ A visitor pulls a lever and the machine breaks. The robot then decides what to d
 ## Project status
 
 - [x] The robot loop in the terminal
-- [ ] The lever over HTTP, with live events (SSE)
+- [x] The lever over HTTP, with live events (SSE)
 - [ ] The 3D scene in the browser
 - [ ] An LLM proposes the action, the engine validates it
 
