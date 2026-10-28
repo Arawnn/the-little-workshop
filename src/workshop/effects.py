@@ -12,7 +12,7 @@ def apply_completion_effect(action: Action, world: World) -> None:
     match action.type:
         case ActionType.MOVE_TO:
             if action.target is None:
-                raise ValueError("Une destination est nécessaire pour déplacer le robot")
+                raise ValueError("A target is required to move the robot")
             world.robot.position = action.target
         case ActionType.INSPECT:
             world.machine.diagnostic = diagnose(world.machine.wear)

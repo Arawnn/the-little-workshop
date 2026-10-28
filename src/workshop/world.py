@@ -65,9 +65,9 @@ class World:
 
 def diagnose(wear: int) -> Diagnostic:
     if wear > 100:
-        raise ValueError("L'usure ne peut pas être supérieur à 100")
+        raise ValueError("Wear cannot be greater than 100")
     if wear < 0:
-        raise ValueError("L'usure ne peut pas être inférieur à 0")
+        raise ValueError("Wear cannot be less than 0")
     if wear >= 90:
         return Diagnostic.WORN_BELT
     elif wear >= 70:

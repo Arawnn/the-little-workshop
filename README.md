@@ -1,30 +1,30 @@
 # The Little Workshop
 
-**Un portfolio qui est un monde : ses habitants décident.**
+**A world where agents make decisions.**
 
-![Le Bricoleur répare la machine](assets/pull-lever.gif)
+![The robot repairs the machine](assets/pull-lever.gif)
 
-Un visiteur tire un levier, la machine casse. Le Bricoleur, un robot, décide alors quoi faire : se déplacer, inspecter, poser un diagnostic, réparer. Chaque décision est tracée, y compris celles qu'il refuse.
+A visitor pulls a lever and the machine breaks. The robot then decides what to do: move, inspect, run a diagnosis, repair. Every decision is traced, including the ones it rejects.
 
-## Où en est le projet
+## Project status
 
-- [x] La boucle du robot en terminal
-- [ ] Le levier par HTTP et les événements en direct (SSE)
-- [ ] La scène 3D dans le navigateur
-- [ ] Un LLM propose l'action, le moteur valide
+- [x] The robot loop in the terminal
+- [ ] The lever over HTTP, with live events (SSE)
+- [ ] The 3D scene in the browser
+- [ ] An LLM proposes the action, the engine validates it
 
-## Essayer
+## Try it
 
 ```bash
 uv sync
-uv run pull-lever             # robot à 4 m : il se déplace d'abord
-uv run pull-lever --near      # robot à côté : il inspecte directement
-uv run pull-lever --wear 95   # usure élevée : diagnostic différent
+uv run pull-lever             # robot 4 m away: it moves first
+uv run pull-lever --near      # robot nearby: it inspects right away
+uv run pull-lever --wear 95   # high wear: different diagnosis
 uv run pytest
 ```
 
-## Comment ça marche
+## How it works
 
 `idle → moving → inspecting → repairing → idle`
 
-Machine à états (state pattern) et simulation événementielle : chaque action produit ses effets sur le monde avant la décision suivante.
+A state machine (state pattern) and an event-driven simulation: each action applies its effects to the world before the next decision.

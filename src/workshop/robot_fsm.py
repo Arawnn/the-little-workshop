@@ -37,7 +37,7 @@ class RobotStateHandler(ABC):
         return Transition(
             target=RobotState.INSPECTING,
             action=action,
-            reason=f"robot à {dist:.2f} m",
+            reason=f"robot at {dist:.2f} m",
         )
 
 
@@ -47,7 +47,7 @@ class IdleState(RobotStateHandler):
             return None
 
         if world.machine.state != MachineState.BROKEN:
-            return Reject("La machine n'est pas cassée")
+            return Reject("The machine is not broken")
 
         d = distance(world.robot.position, world.machine.position)
         if d <= REACH:
@@ -62,7 +62,7 @@ class IdleState(RobotStateHandler):
         return Transition(
             target=RobotState.MOVING,
             action=action,
-            reason=f"robot à {d:.2f} m",
+            reason=f"robot at {d:.2f} m",
         )
 
 
@@ -72,17 +72,17 @@ class MovingState(RobotStateHandler):
             return None
 
         if not self._is_current_action(world, event):
-            return Reject("L'action reçue ne correspond pas à l'action en cours du robot")
+            return Reject("The received action does not match the robot's current action")
 
         if world.machine.state != MachineState.BROKEN:
-            return Reject("La machine n'est pas cassée")
+            return Reject("The machine is not broken")
 
         d = distance(world.robot.position, world.machine.position)
         if d <= REACH:
             return self._start_inspection(world, event, d)
 
-        # Pas encore de politique de reprise dans le scénario nominal
-        return Reject(f"Le robot n'a pas atteint la machine, distance : {d:.2f} m")
+        # No retry policy yet in the nominal scenario
+        return Reject(f"The robot did not reach the machine, distance: {d:.2f} m")
 
 
 class InspectingState(RobotStateHandler):
@@ -91,19 +91,17 @@ class InspectingState(RobotStateHandler):
             return None
 
         if not self._is_current_action(world, event):
-            return Reject("L'action reçue ne correspond pas à l'action en cours du robot")
+            return Reject("The received action does not match the robot's current action")
 
         if world.machine.state != MachineState.BROKEN:
-            return Reject("La machine n'est pas cassée")
+            return Reject("The machine is not broken")
 
         d = distance(world.robot.position, world.machine.position)
         if d > REACH:
-            return Reject(
-                f"Réparation impossible : robot trop loin de la machine, distance : {d:.2f} m"
-            )
+            return Reject(f"Cannot repair: robot too far from the machine, distance: {d:.2f} m")
 
         if world.machine.diagnostic is None:
-            return Reject("Réparation impossible : aucun diagnostic connu pour la machine")
+            return Reject("Cannot repair: no known diagnostic for the machine")
 
         action = Action(
             id=uuid.uuid4(),
@@ -113,7 +111,7 @@ class InspectingState(RobotStateHandler):
         return Transition(
             target=RobotState.REPAIRING,
             action=action,
-            reason=f"diagnostic : {world.machine.diagnostic.name}",
+            reason=f"diagnostic: {world.machine.diagnostic.name}",
         )
 
 
@@ -123,14 +121,14 @@ class RepairingState(RobotStateHandler):
             return None
 
         if not self._is_current_action(world, event):
-            return Reject("L'action reçue ne correspond pas à l'action en cours du robot")
+            return Reject("The received action does not match the robot's current action")
 
         if world.machine.state != MachineState.RUNNING:
-            return Reject("Réparation échouée : la machine n'est pas en marche")
+            return Reject("Repair failed: the machine is not running")
 
         return Transition(
             target=RobotState.IDLE,
-            reason="machine réparée",
+            reason="machine repaired",
         )
 
 

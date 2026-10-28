@@ -13,20 +13,20 @@ def format_entry(entry: TraceEntry) -> str:
     if isinstance(entry.outcome, Transition):
         return f"{before}   --{event}-->   {entry.after.name.lower()}   ({entry.outcome.reason})"
     if isinstance(entry.outcome, Reject):
-        return f"{before}   --{event}--x   rejeté : {entry.outcome.reason}"
-    return f"{before}   --{event}--   ignoré"
+        return f"{before}   --{event}--x   rejected: {entry.outcome.reason}"
+    return f"{before}   --{event}--   ignored"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="pull-lever",
-        description="Tire le levier et affiche les décisions du Bricoleur.",
+        description="Pull the lever and print the robot's decisions.",
     )
-    parser.add_argument("--near", action="store_true", help="place le robot près de la machine")
-    parser.add_argument("--wear", type=int, default=0, help="usure de la machine, de 0 à 100")
+    parser.add_argument("--near", action="store_true", help="place the robot near the machine")
+    parser.add_argument("--wear", type=int, default=0, help="machine wear, from 0 to 100")
     args = parser.parse_args(argv)
     if not 0 <= args.wear <= 100:
-        parser.error("--wear doit être compris entre 0 et 100")
+        parser.error("--wear must be between 0 and 100")
     return args
 
 

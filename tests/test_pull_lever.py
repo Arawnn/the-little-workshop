@@ -26,13 +26,13 @@ def test_format_entry_reject():
     entry = TraceEntry(
         before=RobotState.MOVING,
         event_type=EventType.ACTION_COMPLETED,
-        outcome=Reject(reason="robot trop loin"),
+        outcome=Reject(reason="robot too far"),
         after=RobotState.MOVING,
     )
 
     row = format_entry(entry)
 
-    assert row == "moving   --action.completed--x   rejeté : robot trop loin"
+    assert row == "moving   --action.completed--x   rejected: robot too far"
 
 
 def test_format_entry_ignored():
@@ -45,7 +45,7 @@ def test_format_entry_ignored():
 
     row = format_entry(entry)
 
-    assert row == "moving   --machine.broke--   ignoré"
+    assert row == "moving   --machine.broke--   ignored"
 
 
 # --- main ---
@@ -85,4 +85,4 @@ def test_main_rejects_invalid_wear(wear, capsys):
         main(["--wear", wear])
 
     assert exc.value.code == 2
-    assert "--wear doit être compris entre 0 et 100" in capsys.readouterr().err
+    assert "--wear must be between 0 and 100" in capsys.readouterr().err

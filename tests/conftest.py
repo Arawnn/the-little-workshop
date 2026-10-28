@@ -9,7 +9,7 @@ from workshop.world import Diagnostic, MachineState, RobotState, World
 
 @pytest.fixture
 def make_world() -> Callable[..., World]:
-    """Factory fixture : pytest injecte la fonction, chaque test l'appelle avec ses paramètres."""
+    """Factory fixture: pytest injects the function, each test calls it with its own parameters."""
 
     def _make_world(
         robot_state: RobotState = RobotState.IDLE,
