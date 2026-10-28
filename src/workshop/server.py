@@ -13,10 +13,10 @@ app = FastAPI()
 
 client_queue = {}
 
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
-
 
 
 @app.get("/events", response_class=EventSourceResponse)
@@ -24,8 +24,8 @@ async def events():
     queue = asyncio.Queue()
     client_id = id(queue)
     client_queue[client_id] = queue
-    try: 
-        while True:    
+    try:
+        while True:
             event = await queue.get()
             yield event
     finally:
