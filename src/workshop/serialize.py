@@ -20,3 +20,5 @@ def match_outcome(entry: TraceEntry) -> str:
             return "reject"
         case None:
             return "ignored"
+        case _:
+            raise ValueError(f"unknown outcome: {entry.outcome!r}")
