@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 
+
 const canvas = document.querySelector<HTMLCanvasElement>("#scene");
 if (!canvas) {
     throw new Error("Canvas not detected in DOM.")
@@ -12,23 +13,51 @@ const height = 400;
 
 
 const scene = new THREE.Scene();
-const geometry = new THREE.BoxGeometry(1, 1, 1)
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-const mesh = new THREE.Mesh(geometry, material)
-mesh.rotation.x = Math.PI * 0.25
-mesh.rotation.y = Math.PI * 0.25
+
+
+//robot
+const robotGeometry = new THREE.BoxGeometry(1, 1, 1)
+const robotMaterial = new THREE.MeshStandardMaterial({ color: "pink" })
+const robot = new THREE.Mesh(robotGeometry, robotMaterial)
+robot.position.x = -1.5
+robot.rotation.x = Math.PI * 0.25
+
+
+
+//machine
+const machineGeometry = new THREE.BoxGeometry(1, 1, 1)
+const machineMaterial = new THREE.MeshStandardMaterial({ color: "grey" })
+const machine = new THREE.Mesh(machineGeometry, machineMaterial)
+machine.position.x = 1.5
+machine.rotation.x = Math.PI * 0.25
 
 
 
 const camera = new THREE.PerspectiveCamera(75, width / height);
-camera.position.z = 3
-camera.lookAt(mesh.position)
+camera.position.z = 4
 
+//lights
+const ambientLight = new THREE.AmbientLight("white", 1)
+
+const directionalLight = new THREE.DirectionalLight("white", 0.9)
+directionalLight.position.set(1,2,3)
 
 scene.add(axesHelper)
-scene.add(mesh)
-scene.add(camera)
+scene.add(robot)
+scene.add(machine)
+scene.add(directionalLight)
+scene.add(ambientLight)
+
 
 const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(width,height)
-renderer.render(scene, camera)
+
+
+const timer = new THREE.Timer()
+
+renderer.setAnimationLoop(() => {
+    timer.update()
+    const elapsedTime = timer.getElapsed()
+    robot.rotation.y = elapsedTime
+    renderer.render(scene, camera)
+})
