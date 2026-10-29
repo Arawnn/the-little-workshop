@@ -5,16 +5,13 @@ if (!eventList) {
   
 }
 
-const btnPullLever = document.querySelector('#pull-lever');
+const btnPullLever = document.querySelector<HTMLButtonElement>('#pull-lever');
 if (!btnPullLever) {
   throw new Error("Pull the lever button not detected.")
 }
 
 const pullLever = async () => {
-  const btn = document.querySelector<HTMLButtonElement>("#pull-lever");
-  if (btn) {
-    btn.disabled = true
-  }
+  btnPullLever.disabled = true
 
   try {
     const response = await fetch("/api/lever", {
@@ -31,9 +28,7 @@ const pullLever = async () => {
   } catch(error) {
     console.error('Request failed:', error)
   } finally {
-    if (btn) {
-      btn.disabled = false
-    }
+    btnPullLever.disabled = false
   }  
 }
 
@@ -51,7 +46,7 @@ eventSource.onmessage = (e) => {
     reason = `: ${result.reason}`
   }
   
-  newElement.textContent = `${result.before} → ${result.after} (${result.outcome} ${reason})`;
+  newElement.textContent = `${result.before} → ${result.after} (${result.outcome}${reason})`;
   
   eventList.appendChild(newElement);
 }
