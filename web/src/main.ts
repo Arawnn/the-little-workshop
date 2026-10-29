@@ -48,7 +48,6 @@ eventSource.onmessage = (e) => {
     console.warn(`Unknown Robot state ${traceEntry.after}`);
     return;
   }
-  console.log(performance.now(), traceEntry.after)
   setRobotState(traceEntry.after)
   let reason = ''
   if (traceEntry.reason) {
