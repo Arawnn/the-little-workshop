@@ -24,6 +24,7 @@ def test_lever_without_options():
                 "event": "machine.broke",
                 "outcome": "transition",
                 "reason": "robot at 4.00 m",
+                "t": 0.0,
             },
             {
                 "before": "moving",
@@ -31,6 +32,7 @@ def test_lever_without_options():
                 "event": "action.completed",
                 "outcome": "transition",
                 "reason": "robot at 1.00 m",
+                "t": 2.0,
             },
             {
                 "before": "inspecting",
@@ -38,6 +40,7 @@ def test_lever_without_options():
                 "event": "action.completed",
                 "outcome": "transition",
                 "reason": "diagnostic: JAMMED_GEAR",
+                "t": 3.0,
             },
             {
                 "before": "repairing",
@@ -45,6 +48,7 @@ def test_lever_without_options():
                 "event": "action.completed",
                 "outcome": "transition",
                 "reason": "machine repaired",
+                "t": 6.0,
             },
         ]
     }

@@ -27,6 +27,7 @@ def test_simulator_scenario_nominal(make_world):
         (RobotState.INSPECTING, RobotState.REPAIRING),
         (RobotState.REPAIRING, RobotState.IDLE),
     ]
+    assert [e.t for e in traces] == [0, 2, 3, 6]
     assert world.robot.state == RobotState.IDLE
     assert world.machine.diagnostic is None
 

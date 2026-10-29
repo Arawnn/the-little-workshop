@@ -11,6 +11,13 @@ class ActionType(Enum):
     REPAIR = auto()
 
 
+ACTION_DURATIONS: dict[ActionType, float] = {
+    ActionType.MOVE_TO: 2.0,
+    ActionType.INSPECT: 1.0,
+    ActionType.REPAIR: 3.0,
+}
+
+
 @dataclass(frozen=True)
 class Action:
     id: uuid.UUID

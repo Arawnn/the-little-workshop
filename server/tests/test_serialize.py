@@ -13,6 +13,7 @@ def test_entry_to_dict_transition():
         event_type=EventType.MACHINE_BROKE,
         outcome=Transition(target=RobotState.MOVING, reason="robot at 4.0m"),
         after=RobotState.MOVING,
+        t=0.0,
     )
     res = json.dumps(entry_to_dict(entry))
 
@@ -22,6 +23,7 @@ def test_entry_to_dict_transition():
         "event": "machine.broke",
         "outcome": "transition",
         "reason": "robot at 4.0m",
+        "t": 0.0,
     }
 
 
@@ -31,6 +33,7 @@ def test_entry_to_dict_ignore():
         event_type=EventType.MACHINE_BROKE,
         outcome=None,
         after=RobotState.MOVING,
+        t=0.0,
     )
     res = json.dumps(entry_to_dict(entry))
 
@@ -40,6 +43,7 @@ def test_entry_to_dict_ignore():
         "event": "machine.broke",
         "outcome": "ignored",
         "reason": None,
+        "t": 0.0,
     }
 
 
@@ -49,6 +53,7 @@ def test_entry_to_dict_reject():
         event_type=EventType.ACTION_COMPLETED,
         outcome=Reject(reason="robot too far"),
         after=RobotState.MOVING,
+        t=0.0,
     )
     res = json.dumps(entry_to_dict(entry))
 
@@ -58,4 +63,5 @@ def test_entry_to_dict_reject():
         "event": "action.completed",
         "outcome": "reject",
         "reason": "robot too far",
+        "t": 0.0,
     }

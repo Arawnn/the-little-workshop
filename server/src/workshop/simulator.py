@@ -1,9 +1,9 @@
 import uuid
-from collections import deque
 from dataclasses import dataclass
 
 from workshop.actions import Action
 from workshop.effects import apply_completion_effect
+from workshop.event_queue import PriorityEventQueue
 from workshop.events import Event, EventType
 from workshop.executor import ActionExecutor
 from workshop.robot_fsm import Reject, RobotStateMachine, Transition
@@ -16,21 +16,23 @@ class TraceEntry:
     event_type: EventType
     outcome: Transition | Reject | None
     after: RobotState
+    t: float
 
 
 class Simulator:
     def __init__(self, world: World) -> None:
         self.world = world
-        self.events: deque[Event] = deque()
+        self.events: PriorityEventQueue = PriorityEventQueue()
         self.pending_actions: dict[uuid.UUID, Action] = {}
         self.executor = ActionExecutor(self.events, self.pending_actions, self.world)
         self.robot_fsm = RobotStateMachine()
 
     def run(self, first_event: Event) -> list[TraceEntry]:
         trace: list[TraceEntry] = []
-        self.events.append(first_event)
+        self.events.push(0.0, first_event)
+
         while self.events:
-            event = self.events.popleft()
+            t, event = self.events.pop()
 
             if event.type == EventType.ACTION_COMPLETED:
                 completed_action = self.pending_actions.pop(event.action_id, None)
@@ -42,7 +44,7 @@ class Simulator:
             after = self.world.robot.state
 
             trace.append(
-                TraceEntry(before=before, event_type=event.type, outcome=outcome, after=after)
+                TraceEntry(before=before, event_type=event.type, outcome=outcome, after=after, t=t)
             )
             if isinstance(outcome, Transition) and outcome.action is not None:
                 self.executor.execute(outcome.action)

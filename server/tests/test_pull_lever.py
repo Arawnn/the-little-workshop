@@ -15,6 +15,7 @@ def test_format_entry():
         event_type=EventType.MACHINE_BROKE,
         outcome=Transition(target=RobotState.MOVING, reason="robot at 4.0m"),
         after=RobotState.MOVING,
+        t=0.0,
     )
 
     row = format_entry(entry)
@@ -28,6 +29,7 @@ def test_format_entry_reject():
         event_type=EventType.ACTION_COMPLETED,
         outcome=Reject(reason="robot too far"),
         after=RobotState.MOVING,
+        t=0.0,
     )
 
     row = format_entry(entry)
@@ -41,6 +43,7 @@ def test_format_entry_ignored():
         event_type=EventType.MACHINE_BROKE,
         outcome=None,
         after=RobotState.MOVING,
+        t=0.0,
     )
 
     row = format_entry(entry)

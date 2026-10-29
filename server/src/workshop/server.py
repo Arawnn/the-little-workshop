@@ -38,7 +38,7 @@ class LeverOptions(BaseModel):
 
 
 @app.post("/lever")
-async def lever(options: LeverOptions) -> dict[str, list[dict[str, str | None]]]:
+async def lever(options: LeverOptions) -> dict[str, list[dict[str, str | float | None]]]:
     world = World()
     if options.near:
         world.robot.position = Vec3(3.5, 0, 0)

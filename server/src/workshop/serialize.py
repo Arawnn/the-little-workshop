@@ -9,6 +9,7 @@ def entry_to_dict(entry: TraceEntry) -> dict:
         "event": entry.event_type.value,
         "outcome": match_outcome(entry),
         "reason": entry.outcome.reason if entry.outcome is not None else None,
+        "t": entry.t,
     }
 
 
