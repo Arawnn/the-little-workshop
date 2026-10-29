@@ -18,6 +18,7 @@ export type TraceEntry = {
     after: RobotState,
     event: EventType,
     outcome: Outcome,
-    reason: string | null
+    reason: string | null,
+    t: number
 }
  
