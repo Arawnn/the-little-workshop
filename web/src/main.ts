@@ -1,3 +1,4 @@
+import "./scene"
 
 const eventList = document.querySelector('#trace');  
 if (!eventList) {
