@@ -1,4 +1,6 @@
-import "./scene"
+import { setRobotState } from "./scene";
+import { isRobotState } from "./trace";
+
 
 const eventList = document.querySelector('#trace');  
 if (!eventList) {
@@ -10,6 +12,12 @@ const btnPullLever = document.querySelector<HTMLButtonElement>('#pull-lever');
 if (!btnPullLever) {
   throw new Error("Pull the lever button not detected.")
 }
+
+const state = 'repairing'
+if (!isRobotState(state)) {
+  throw new Error('Invalid state value for the Robot.')
+}
+setRobotState(state)
 
 const pullLever = async () => {
   btnPullLever.disabled = true

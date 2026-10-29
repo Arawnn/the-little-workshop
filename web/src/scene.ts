@@ -1,10 +1,21 @@
 import * as THREE from 'three'
+import type { RobotState } from './trace'
+
+
 
 
 const canvas = document.querySelector<HTMLCanvasElement>("#scene");
 if (!canvas) {
     throw new Error("Canvas not detected in DOM.")
 }
+const robotColors: Record<RobotState, THREE.Color> = {
+    idle: new THREE.Color('pink'),
+    moving: new THREE.Color('green'),
+    inspecting: new THREE.Color('blue'),
+    repairing: new THREE.Color('brown')
+}
+
+
 
 const axesHelper = new THREE.AxesHelper(2)
 const width = 600;
@@ -17,11 +28,14 @@ const scene = new THREE.Scene();
 
 //robot
 const robotGeometry = new THREE.BoxGeometry(1, 1, 1)
-const robotMaterial = new THREE.MeshStandardMaterial({ color: "pink" })
+const robotMaterial = new THREE.MeshStandardMaterial({ color: robotColors.idle })
 const robot = new THREE.Mesh(robotGeometry, robotMaterial)
 robot.position.x = -1.5
 robot.rotation.x = Math.PI * 0.25
 
+export function setRobotState(state: RobotState): void {
+    robot.material.color.copy(robotColors[state])
+}
 
 
 //machine
