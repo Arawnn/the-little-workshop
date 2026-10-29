@@ -13,11 +13,6 @@ if (!btnPullLever) {
   throw new Error("Pull the lever button not detected.")
 }
 
-const state = 'repairing'
-if (!isRobotState(state)) {
-  throw new Error('Invalid state value for the Robot.')
-}
-setRobotState(state)
 
 const pullLever = async () => {
   btnPullLever.disabled = true
@@ -49,7 +44,12 @@ eventSource.onmessage = (e) => {
   const newElement = document.createElement('li')
   
   const traceEntry: TraceEntry = JSON.parse(e.data)
-
+  if (!isRobotState(traceEntry.after)) {
+    console.warn(`Unknown Robot state ${traceEntry.after}`);
+    return;
+  }
+  console.log(performance.now(), traceEntry.after)
+  setRobotState(traceEntry.after)
   let reason = ''
   if (traceEntry.reason) {
     reason = `: ${traceEntry.reason}`
