@@ -43,18 +43,22 @@ const eventSource = new EventSource('/api/events');
 eventSource.onmessage = (e) => {
   const newElement = document.createElement('li')
   
-  const traceEntry: TraceEntry = JSON.parse(e.data)
+  const traceEntry: TraceEntry = JSON.parse(e.data);
+  let reason = ''
+  if (traceEntry.reason) {
+    reason = `: ${traceEntry.reason}`
+  }
+  newElement.textContent = `${traceEntry.before} → ${traceEntry.after} (${traceEntry.outcome}${reason})`;
+  eventList.appendChild(newElement);
   if (!isRobotState(traceEntry.after)) {
     console.warn(`Unknown Robot state ${traceEntry.after}`);
     return;
   }
   setRobotState(traceEntry.after)
-  let reason = ''
-  if (traceEntry.reason) {
-    reason = `: ${traceEntry.reason}`
-  }
   
-  newElement.textContent = `${traceEntry.before} → ${traceEntry.after} (${traceEntry.outcome}${reason})`;
   
-  eventList.appendChild(newElement);
+  
+  
+  
+  
 }
