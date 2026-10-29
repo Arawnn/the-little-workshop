@@ -1,5 +1,5 @@
 import { setRobotState } from "./scene";
-import { isRobotState } from "./trace";
+import { isRobotState, type TraceEntry } from "./trace";
 
 
 const eventList = document.querySelector('#trace');  
@@ -48,14 +48,14 @@ const eventSource = new EventSource('/api/events');
 eventSource.onmessage = (e) => {
   const newElement = document.createElement('li')
   
-  const result = JSON.parse(e.data)
-  
+  const traceEntry: TraceEntry = JSON.parse(e.data)
+
   let reason = ''
-  if (result.reason) {
-    reason = `: ${result.reason}`
+  if (traceEntry.reason) {
+    reason = `: ${traceEntry.reason}`
   }
   
-  newElement.textContent = `${result.before} → ${result.after} (${result.outcome}${reason})`;
+  newElement.textContent = `${traceEntry.before} → ${traceEntry.after} (${traceEntry.outcome}${reason})`;
   
   eventList.appendChild(newElement);
 }
