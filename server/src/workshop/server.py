@@ -1,17 +1,36 @@
 import asyncio
 
-from fastapi import FastAPI
+from fastapi import BackgroundTasks, FastAPI
 from fastapi.sse import EventSourceResponse
 from pydantic import BaseModel, Field
 
 from workshop.serialize import entry_to_dict
-from workshop.simulator import Simulator, TraceEntry
+from workshop.simulator import Simulator
 from workshop.vec3 import Vec3
 from workshop.world import World
 
 app = FastAPI()
 
 client_queue = {}
+
+TIME_SCALE = 1.0
+
+
+async def broadcast(
+    entries: list[dict[str, str | float | None]],
+    queues: dict[int, asyncio.Queue],
+    scale: float,
+    sleep=asyncio.sleep,
+) -> None:
+    t_precedent = 0
+
+    for entry in entries:
+        delta = (entry["t"] - t_precedent) * scale
+        await sleep(delta)
+        for queue in queues.values():
+            queue.put_nowait(entry)
+
+        t_precedent = entry["t"]
 
 
 @app.get("/health")
@@ -38,7 +57,9 @@ class LeverOptions(BaseModel):
 
 
 @app.post("/lever")
-async def lever(options: LeverOptions) -> dict[str, list[dict[str, str | float | None]]]:
+async def lever(
+    options: LeverOptions, background_tasks: BackgroundTasks
+) -> dict[str, list[dict[str, str | float | None]]]:
     world = World()
     if options.near:
         world.robot.position = Vec3(3.5, 0, 0)
@@ -52,22 +73,6 @@ async def lever(options: LeverOptions) -> dict[str, list[dict[str, str | float |
 
     entries = [entry_to_dict(e) for e in traces]
 
-    for entry in entries:
-        for queue in client_queue.values():
-            queue.put_nowait(entry)
+    background_tasks.add_task(broadcast, entries, client_queue, TIME_SCALE)
 
     return {"trace": entries}
-
-
-async def broadcast(
-    entries: list[TraceEntry], queues: dict[int, asyncio.Queue], scale: float, sleep=asyncio.sleep
-) -> None:
-    t_precedent = 0
-
-    for entry in entries:
-        delta = (entry["t"] - t_precedent) * scale
-        await sleep(delta)
-        for queue in queues.values():
-            queue.put_nowait(entry)
-
-        t_precedent = entry["t"]

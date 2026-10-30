@@ -2,7 +2,7 @@ import asyncio
 
 from fastapi.testclient import TestClient
 
-from workshop.server import app, broadcast
+from workshop.server import app, broadcast, client_queue
 
 client = TestClient(app)
 
@@ -106,3 +106,19 @@ def test_broadcast_pushes_entries_to_subscribers():
     while queue.qsize() > 0:
         received.append(queue.get_nowait())
     assert received == entries
+
+
+def test_lever_broadcasts_trace_to_subscribers():
+    queue = asyncio.Queue()
+    client_id = id(queue)
+    client_queue[client_id] = queue
+
+    try:
+        r = client.post("/lever", json={})
+        received = []
+        while queue.qsize():
+            received.append(queue.get_nowait())
+        assert received == r.json()["trace"]
+
+    finally:
+        del client_queue[client_id]

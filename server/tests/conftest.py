@@ -3,8 +3,14 @@ from collections.abc import Callable
 
 import pytest
 
+from workshop import server
 from workshop.vec3 import Vec3
 from workshop.world import Diagnostic, MachineState, RobotState, World
+
+
+@pytest.fixture(autouse=True)
+def no_wait(monkeypatch):
+    monkeypatch.setattr(server, "TIME_SCALE", 0)
 
 
 @pytest.fixture
