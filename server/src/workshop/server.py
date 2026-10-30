@@ -5,7 +5,7 @@ from fastapi.sse import EventSourceResponse
 from pydantic import BaseModel, Field
 
 from workshop.serialize import entry_to_dict
-from workshop.simulator import Simulator
+from workshop.simulator import Simulator, TraceEntry
 from workshop.vec3 import Vec3
 from workshop.world import World
 
@@ -57,3 +57,17 @@ async def lever(options: LeverOptions) -> dict[str, list[dict[str, str | float |
             queue.put_nowait(entry)
 
     return {"trace": entries}
+
+
+async def broadcast(
+    entries: list[TraceEntry], queues: dict[int, asyncio.Queue], scale: float, sleep=asyncio.sleep
+) -> None:
+    t_precedent = 0
+
+    for entry in entries:
+        delta = (entry["t"] - t_precedent) * scale
+        await sleep(delta)
+        for queue in queues.values():
+            queue.put_nowait(entry)
+
+        t_precedent = entry["t"]
