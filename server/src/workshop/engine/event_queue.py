@@ -22,5 +22,12 @@ class PriorityEventQueue:
 
         return self._current_time
 
+    def peek(self) -> tuple[float, Event] | None:
+        if not self._heap:
+            return None
+
+        t, _, event = self._heap[0]
+        return (t, event)
+
     def __len__(self) -> int:
         return len(self._heap)
