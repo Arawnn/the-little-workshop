@@ -3,20 +3,9 @@ from collections.abc import Callable
 
 import pytest
 
-from workshop import server
-from workshop.clock import Clock
-from workshop.vec3 import Vec3
-from workshop.world import Diagnostic, MachineState, RobotState, World
-
-
-@pytest.fixture(autouse=True)
-def no_wait(monkeypatch):
-    monkeypatch.setattr(server, "TIME_SCALE", 0)
-
-
-@pytest.fixture(autouse=True)
-def server_clock(monkeypatch):
-    monkeypatch.setattr(server, "clock", FakeClock(10.0))
+from workshop.domain.clock import Clock
+from workshop.domain.vec3 import Vec3
+from workshop.domain.world import Diagnostic, MachineState, RobotState, World
 
 
 @pytest.fixture

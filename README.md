@@ -15,7 +15,7 @@ A visitor pulls a lever and the machine breaks. The robot then decides what to d
 
 ## Repository organization
 
-- `server/` — Python engine: state machine, simulation, `pull-lever` CLI and FastAPI server (HTTP + SSE)
+- `server/` — Python engine: state machine, simulation, `pull-lever` CLI and FastAPI server (HTTP + SSE). Layers (domain, engine, adapters, entrypoints): see [`server/ARCHITECTURE.md`](server/ARCHITECTURE.md)
 - `web/` — browser client (Vite + TypeScript): a button pulls the lever, transitions stream in live
 
 ## Try it
@@ -27,7 +27,7 @@ uv run pull-lever             # robot 4 m away: it moves first
 uv run pull-lever --near      # robot nearby: it inspects right away
 uv run pull-lever --wear 95   # high wear: different diagnosis
 uv run pytest
-uv run uvicorn workshop.server:app --reload   # HTTP + SSE server on :8000
+uv run uvicorn workshop.entrypoints.http.server:app --reload   # HTTP + SSE server on :8000
 ```
 
 ### Run the web client
@@ -37,7 +37,7 @@ The client needs the server running. Use two terminals:
 ```bash
 # terminal 1
 cd server
-uv run uvicorn workshop.server:app --reload   # :8000
+uv run uvicorn workshop.entrypoints.http.server:app --reload   # :8000
 
 # terminal 2
 cd web
