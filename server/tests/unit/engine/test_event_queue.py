@@ -106,7 +106,7 @@ def test_peek_does_not_remove_head():
     queue.push(1.0, pushed_first)
     queue.push(1.0, pushed_second)
 
-    _, _ = queue.peek()
+    queue.peek()
 
     assert len(queue) == 2
     assert queue.current_time() == 0.0
