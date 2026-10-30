@@ -29,28 +29,31 @@ class Simulator:
         self.executor = ActionExecutor(self.events, self.pending_actions, self.world)
         self.robot_fsm = RobotStateMachine()
 
+    def _process_event(self, t: float, event: Event) -> TraceEntry:
+        if event.type == EventType.ACTION_COMPLETED:
+            completed_action = self.pending_actions.pop(event.action_id, None)
+            if completed_action is not None:
+                apply_completion_effect(completed_action, self.world)
+
+        before = self.world.robot.state
+        outcome = self.robot_fsm.handle(self.world, event)
+        after = self.world.robot.state
+
+        if isinstance(outcome, Transition) and outcome.action is not None:
+            self.executor.execute(outcome.action)
+
+        return TraceEntry(before=before, event_type=event.type, outcome=outcome, after=after, t=t)
+
     def run(self) -> list[TraceEntry]:
-        trace: list[TraceEntry] = []
+        traces: list[TraceEntry] = []
 
         while self.events:
             t, event = self.events.pop()
 
-            if event.type == EventType.ACTION_COMPLETED:
-                completed_action = self.pending_actions.pop(event.action_id, None)
-                if completed_action is not None:
-                    apply_completion_effect(completed_action, self.world)
+            trace = self._process_event(t, event)
+            traces.append(trace)
 
-            before = self.world.robot.state
-            outcome = self.robot_fsm.handle(self.world, event)
-            after = self.world.robot.state
-
-            trace.append(
-                TraceEntry(before=before, event_type=event.type, outcome=outcome, after=after, t=t)
-            )
-            if isinstance(outcome, Transition) and outcome.action is not None:
-                self.executor.execute(outcome.action)
-
-        return trace
+        return traces
 
     def pull_lever(self) -> Event | Reject:
         if self.world.machine.state != MachineState.RUNNING:
