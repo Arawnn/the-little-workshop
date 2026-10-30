@@ -4,6 +4,7 @@ from collections.abc import Callable
 import pytest
 
 from workshop import server
+from workshop.clock import Clock
 from workshop.vec3 import Vec3
 from workshop.world import Diagnostic, MachineState, RobotState, World
 
@@ -11,6 +12,11 @@ from workshop.world import Diagnostic, MachineState, RobotState, World
 @pytest.fixture(autouse=True)
 def no_wait(monkeypatch):
     monkeypatch.setattr(server, "TIME_SCALE", 0)
+
+
+@pytest.fixture(autouse=True)
+def server_clock(monkeypatch):
+    monkeypatch.setattr(server, "clock", FakeClock(10.0))
 
 
 @pytest.fixture
@@ -33,3 +39,19 @@ def make_world() -> Callable[..., World]:
         return world
 
     return _make_world
+
+
+class FakeClock(Clock):
+    def __init__(self, t: float = 10.0):
+        self.t = t
+
+    def now(self) -> float:
+        return self.t
+
+
+@pytest.fixture
+def fake_clock() -> Callable[[], FakeClock]:
+    def _fake_clock() -> FakeClock:
+        return FakeClock()
+
+    return _fake_clock

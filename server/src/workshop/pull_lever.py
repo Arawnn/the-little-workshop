@@ -1,5 +1,6 @@
 import argparse
 
+from workshop.clock import SystemClock
 from workshop.robot_fsm import Reject, Transition
 from workshop.simulator import Simulator, TraceEntry
 from workshop.vec3 import Vec3
@@ -39,8 +40,8 @@ def main(argv=None):
     if args.wear:
         world.machine.wear = args.wear
 
-    sim = Simulator(world)
-
-    traces = sim.run(sim.pull_lever())
+    sim = Simulator(world, SystemClock())
+    sim.pull_lever()
+    traces = sim.run()
     for trace in traces:
         print(format_entry(trace))

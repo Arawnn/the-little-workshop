@@ -4,6 +4,7 @@ from fastapi import BackgroundTasks, FastAPI
 from fastapi.sse import EventSourceResponse
 from pydantic import BaseModel, Field
 
+from workshop.clock import SystemClock
 from workshop.serialize import entry_to_dict
 from workshop.simulator import Simulator
 from workshop.vec3 import Vec3
@@ -14,6 +15,7 @@ app = FastAPI()
 client_queue = {}
 
 TIME_SCALE = 1.0
+clock = SystemClock()
 
 
 async def broadcast(
@@ -22,7 +24,10 @@ async def broadcast(
     scale: float,
     sleep=asyncio.sleep,
 ) -> None:
-    t_precedent = 0
+    if not entries:
+        return
+
+    t_precedent = entries[0]["t"]
 
     for entry in entries:
         delta = (entry["t"] - t_precedent) * scale
@@ -67,9 +72,9 @@ async def lever(
     if options.wear:
         world.machine.wear = options.wear
 
-    sim = Simulator(world)
-
-    traces = sim.run(sim.pull_lever())
+    sim = Simulator(world, clock)
+    sim.pull_lever()
+    traces = sim.run()
 
     entries = [entry_to_dict(e) for e in traces]
 

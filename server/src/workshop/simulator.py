@@ -2,6 +2,7 @@ import uuid
 from dataclasses import dataclass
 
 from workshop.actions import Action
+from workshop.clock import Clock
 from workshop.effects import apply_completion_effect
 from workshop.event_queue import PriorityEventQueue
 from workshop.events import Event, EventType
@@ -20,16 +21,16 @@ class TraceEntry:
 
 
 class Simulator:
-    def __init__(self, world: World) -> None:
+    def __init__(self, world: World, clock: Clock) -> None:
         self.world = world
+        self.clock = clock
         self.events: PriorityEventQueue = PriorityEventQueue()
         self.pending_actions: dict[uuid.UUID, Action] = {}
         self.executor = ActionExecutor(self.events, self.pending_actions, self.world)
         self.robot_fsm = RobotStateMachine()
 
-    def run(self, first_event: Event) -> list[TraceEntry]:
+    def run(self) -> list[TraceEntry]:
         trace: list[TraceEntry] = []
-        self.events.push(0.0, first_event)
 
         while self.events:
             t, event = self.events.pop()
@@ -51,6 +52,16 @@ class Simulator:
 
         return trace
 
-    def pull_lever(self) -> Event:
+    def pull_lever(self) -> Event | Reject:
+        if self.world.machine.state != MachineState.RUNNING:
+            return Reject("Machine is not running!")
         self.world.machine.state = MachineState.BROKEN
-        return Event(type=EventType.MACHINE_BROKE, machine_id=self.world.machine.id)
+
+        event = Event(type=EventType.MACHINE_BROKE, machine_id=self.world.machine.id)
+        self.schedule(event)
+
+        return event
+
+    def schedule(self, event: Event):
+        t = self.clock.now()
+        self.events.push(t, event)
