@@ -30,7 +30,7 @@ class Simulator:
         self.robot_fsm = RobotStateMachine()
 
     def _process_event(self, t: float, event: Event) -> TraceEntry:
-        if event.type == EventType.ACTION_COMPLETED:
+        if event.action_id and event.type == EventType.ACTION_COMPLETED:
             completed_action = self.pending_actions.pop(event.action_id, None)
             if completed_action is not None:
                 apply_completion_effect(completed_action, self.world)

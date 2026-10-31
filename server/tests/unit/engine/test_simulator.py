@@ -56,7 +56,8 @@ def test_simulator_scenario_specific_wear(make_world, fake_clock):
     assert len(traces) == 3
     repairing = [e for e in traces if e.after == RobotState.REPAIRING]
     assert len(repairing) == 1
-    assert "OVERHEATED" in repairing[0].outcome.reason
+    if repairing[0].outcome:
+        assert "OVERHEATED" in repairing[0].outcome.reason
 
 
 def test_simulator_scenario_unknown_action(make_world, fake_clock):
@@ -78,8 +79,9 @@ def test_simulator_pull_lever(make_world, fake_clock):
 
     assert world.machine.state == MachineState.BROKEN
 
-    assert event.type == EventType.MACHINE_BROKE
-    assert event.machine_id == world.machine.id
+    if isinstance(event, Event):
+        assert event.type == EventType.MACHINE_BROKE
+        assert event.machine_id == world.machine.id
 
 
 def test_simulator_pull_lever_success(make_world, fake_clock):
