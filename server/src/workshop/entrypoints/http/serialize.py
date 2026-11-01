@@ -1,5 +1,5 @@
 from workshop.domain.robot_fsm import Reject, Transition
-from workshop.engine.simulator import TraceEntry
+from workshop.domain.trace_entry import TraceEntry
 
 
 def entry_to_dict(entry: TraceEntry) -> dict:

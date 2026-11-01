@@ -1,23 +1,14 @@
 import uuid
-from dataclasses import dataclass
 
 from workshop.domain.actions import Action
 from workshop.domain.clock import Clock
 from workshop.domain.effects import apply_completion_effect
 from workshop.domain.events import Event, EventType
 from workshop.domain.robot_fsm import Reject, RobotStateMachine, Transition
-from workshop.domain.world import MachineState, RobotState, World
+from workshop.domain.trace_entry import TraceEntry
+from workshop.domain.world import MachineState, World
 from workshop.engine.event_queue import PriorityEventQueue
 from workshop.engine.executor import ActionExecutor
-
-
-@dataclass(frozen=True)
-class TraceEntry:
-    before: RobotState
-    event_type: EventType
-    outcome: Transition | Reject | None
-    after: RobotState
-    t: float
 
 
 class Simulator:

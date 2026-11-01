@@ -2,8 +2,8 @@ import json
 
 from workshop.domain.events import EventType
 from workshop.domain.robot_fsm import Reject, Transition
+from workshop.domain.trace_entry import TraceEntry
 from workshop.domain.world import RobotState
-from workshop.engine.simulator import TraceEntry
 from workshop.entrypoints.http.serialize import entry_to_dict
 
 
