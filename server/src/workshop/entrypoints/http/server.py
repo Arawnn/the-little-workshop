@@ -30,10 +30,11 @@ async def broadcast(
     t_precedent = entries[0]["t"]
 
     for entry in entries:
-        delta = (entry["t"] - t_precedent) * scale
-        await sleep(delta)
-        for queue in queues.values():
-            queue.put_nowait(entry)
+        if isinstance(entry["t"], (float, int)) and isinstance(t_precedent, (float, int)):
+            delta = (entry["t"] - t_precedent) * scale
+            await sleep(delta)
+            for queue in queues.values():
+                queue.put_nowait(entry)
 
         t_precedent = entry["t"]
 
