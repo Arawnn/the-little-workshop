@@ -38,9 +38,32 @@ class FakeClock(Clock):
         return self.t
 
 
+class SequenceClock(Clock):
+    def __init__(self, times: list[float]) -> None:
+        self._times = iter(times)
+        self._calls = 0
+
+    def now(self) -> float:
+        self._calls += 1
+        try:
+            return next(self._times)
+        except StopIteration as exc:
+            raise RuntimeError(
+                f"SequenceClock: no values, now() called {self._calls} times"
+            ) from exc
+
+
 @pytest.fixture
-def fake_clock() -> Callable[[], FakeClock]:
-    def _fake_clock() -> FakeClock:
-        return FakeClock()
+def fake_clock() -> Callable[[float], FakeClock]:
+    def _fake_clock(t: float = 10.0) -> FakeClock:
+        return FakeClock(t)
 
     return _fake_clock
+
+
+@pytest.fixture
+def sequence_clock() -> Callable[[list[float]], SequenceClock]:
+    def _sequence_clock(times: list[float]) -> SequenceClock:
+        return SequenceClock(times=times)
+
+    return _sequence_clock

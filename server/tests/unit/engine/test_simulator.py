@@ -136,3 +136,90 @@ def test_simulator_accept_new_pull_lever_when_queue_is_empty(make_world, fake_cl
     assert isinstance(event, Event)
     assert event.type == EventType.MACHINE_BROKE
     assert len(sim.events) == 0
+
+
+def test_simulator_step_with_empty_queue(make_world, sequence_clock):
+    world = make_world(robot_state=RobotState.IDLE, machine_state=MachineState.RUNNING)
+
+    sim = Simulator(world, sequence_clock([0.0]))
+
+    assert sim.step() == []
+    assert len(sim.events) == 0
+    assert world.robot.state == RobotState.IDLE
+    assert world.machine.state == MachineState.RUNNING
+
+
+def test_simulator_step_with_no_due_event(make_world, fake_clock):
+    world = make_world(robot_state=RobotState.IDLE, machine_state=MachineState.RUNNING)
+    sim = Simulator(world, fake_clock())
+    event = Event(EventType.ACTION_COMPLETED, uuid.uuid4(), action_id=uuid.uuid4())
+    sim.events.push(16.0, event)
+
+    assert sim.step() == []
+    item = sim.events.peek()
+    if item is not None:
+        t, e = item
+        assert e is event
+        assert t == 16.0
+
+
+def test_simulator_step_with_inclusive_with_boundary_clock(make_world, fake_clock):
+    world = make_world(robot_state=RobotState.IDLE, machine_state=MachineState.RUNNING)
+    sim = Simulator(world, fake_clock())
+
+    event = Event(EventType.MACHINE_BROKE, uuid.uuid4())
+    sim.events.push(10.0, event)
+
+    traces = sim.step()
+
+    assert traces[0].t == 10.0
+    assert len(traces) == 1
+    assert len(sim.events) == 0
+
+
+def test_simulator_step_with_nominal_scenario_at_15(make_world, sequence_clock):
+    world = make_world(machine_state=MachineState.RUNNING, position=Vec3(9, 0, 0))
+
+    sim = Simulator(world, sequence_clock([10.0, 15.0]))
+    sim.pull_lever()
+    traces = sim.step()
+
+    assert len(sim.events) == 1
+    assert len(sim.pending_actions) == 1
+    assert len(traces) == 3
+    assert [(e.before, e.after) for e in traces] == [
+        (RobotState.IDLE, RobotState.MOVING),
+        (RobotState.MOVING, RobotState.INSPECTING),
+        (RobotState.INSPECTING, RobotState.REPAIRING),
+    ]
+    assert [e.t for e in traces] == [10.0, 12.0, 13.0]
+    item = sim.events.peek()
+    if item is not None:
+        t, _ = item
+        assert t == 16.0
+
+
+def test_simulator_step_with_two_successive_call_at_different_t(make_world, fake_clock):
+    world = make_world(machine_state=MachineState.RUNNING, position=Vec3(9, 0, 0))
+    clock = fake_clock()
+    sim = Simulator(world, clock)
+    sim.pull_lever()
+    clock.t = 15.0
+    traces = sim.step()
+    assert len(traces) == 3
+    clock.t = 20.0
+    traces = sim.step()
+
+    assert len(traces) == 1
+    assert traces[0].t == 16.0
+    assert len(sim.events) == 0
+
+
+def test_simulator_step_reads_clock_once(make_world, sequence_clock):
+    world = make_world(machine_state=MachineState.RUNNING, position=Vec3(9, 0, 0))
+
+    sim = Simulator(world, sequence_clock([10.0, 15.0]))
+    sim.pull_lever()
+    traces = sim.step()
+
+    assert [e.t for e in traces] == [10.0, 12.0, 13.0]

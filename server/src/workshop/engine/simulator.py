@@ -55,6 +55,17 @@ class Simulator:
 
         return traces
 
+    def step(self) -> list[TraceEntry]:
+        traces: list[TraceEntry] = []
+        n = self.clock.now()
+        while (item := self.events.peek()) is not None and item[0] <= n:
+            t, event = self.events.pop()
+
+            trace = self._process_event(t, event)
+            traces.append(trace)
+
+        return traces
+
     def pull_lever(self) -> Event | Reject:
         if self.world.machine.state != MachineState.RUNNING:
             return Reject("Machine is not running!")
