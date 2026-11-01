@@ -10,9 +10,16 @@ from workshop.engine.simulator import Simulator
 def test_simulator_scenario_nominal(make_world, fake_clock):
     world = make_world(machine_state=MachineState.RUNNING, position=Vec3(9, 0, 0))
 
-    sim = Simulator(world, fake_clock())
+    clock = fake_clock()
+    sim = Simulator(world, clock)
     sim.pull_lever()
-    traces = sim.run()
+
+    traces = []
+    for now in [10.0, 12.0, 13.0, 16.0]:
+        clock.t = now
+        due = sim.step()
+        assert len(due) == 1
+        traces += due
 
     assert world.robot.position == world.machine.poi
     assert world.robot.current_action_id is None
@@ -35,9 +42,11 @@ def test_simulator_scenario_nominal(make_world, fake_clock):
 def test_simulator_scenario_robot_near(make_world, fake_clock):
     world = make_world(machine_state=MachineState.RUNNING, position=Vec3(3.5, 0, 0))
 
-    sim = Simulator(world, fake_clock())
+    clock = fake_clock()
+    sim = Simulator(world, clock)
     sim.pull_lever()
-    traces = sim.run()
+    clock.t = 14.0
+    traces = sim.step()
     assert len(traces) == 3
     assert [(e.before, e.after) for e in traces] == [
         (RobotState.IDLE, RobotState.INSPECTING),
@@ -49,9 +58,11 @@ def test_simulator_scenario_robot_near(make_world, fake_clock):
 def test_simulator_scenario_specific_wear(make_world, fake_clock):
     world = make_world(machine_state=MachineState.RUNNING, position=Vec3(3.5, 0, 0))
     world.machine.wear = 75
-    sim = Simulator(world, fake_clock())
+    clock = fake_clock()
+    sim = Simulator(world, clock)
     sim.pull_lever()
-    traces = sim.run()
+    clock.t = 14.0
+    traces = sim.step()
 
     assert len(traces) == 3
     repairing = [e for e in traces if e.after == RobotState.REPAIRING]
@@ -64,7 +75,7 @@ def test_simulator_scenario_unknown_action(make_world, fake_clock):
     world = make_world(robot_state=RobotState.MOVING, action_id=uuid.uuid4())
     sim = Simulator(world, fake_clock())
     sim.schedule(Event(EventType.ACTION_COMPLETED, world.machine.id, uuid.uuid4()))
-    trace = sim.run()
+    trace = sim.step()
 
     assert len(trace) == 1
     assert isinstance(trace[0].outcome, Reject)
@@ -127,12 +138,15 @@ def test_simulator_reject_does_not_affect_state(make_world, fake_clock):
 def test_simulator_accept_new_pull_lever_when_queue_is_empty(make_world, fake_clock):
     world = make_world(robot_state=RobotState.IDLE, machine_state=MachineState.RUNNING)
 
-    sim = Simulator(world, fake_clock())
+    clock = fake_clock()
+    sim = Simulator(world, clock)
     sim.pull_lever()
+    clock.t = 16.0
+    sim.step()
 
-    sim.run()
     event = sim.pull_lever()
-    sim.run()
+    clock.t = 22.0
+    sim.step()
     assert isinstance(event, Event)
     assert event.type == EventType.MACHINE_BROKE
     assert len(sim.events) == 0
