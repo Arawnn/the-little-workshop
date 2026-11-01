@@ -15,7 +15,7 @@ A visitor pulls a lever and the machine breaks. The robot then decides what to d
 
 ## Repository organization
 
-- `server/` — Python engine: state machine, simulation, `pull-lever` CLI and FastAPI server (HTTP + SSE). Layers (domain, engine, adapters, entrypoints): see [`server/ARCHITECTURE.md`](server/ARCHITECTURE.md)
+- `server/` — Python engine: state machine, simulation and FastAPI server (HTTP + SSE). Layers (domain, engine, adapters, entrypoints): see [`server/ARCHITECTURE.md`](server/ARCHITECTURE.md)
 - `web/` — browser client (Vite + TypeScript): a button pulls the lever, transitions stream in live
 
 ## Try it
@@ -23,9 +23,6 @@ A visitor pulls a lever and the machine breaks. The robot then decides what to d
 ```bash
 cd server
 uv sync
-uv run pull-lever             # robot 4 m away: it moves first
-uv run pull-lever --near      # robot nearby: it inspects right away
-uv run pull-lever --wear 95   # high wear: different diagnosis
 uv run pytest
 uv run uvicorn workshop.entrypoints.http.server:app --reload   # HTTP + SSE server on :8000
 ```

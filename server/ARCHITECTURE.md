@@ -11,8 +11,7 @@ src/workshop/
 ├── adapters/      driven side: what the core calls through a port
 │                  system_clock (SystemClock implements Clock)
 └── entrypoints/   driving side: what calls the core
-    ├── http/      FastAPI app (HTTP + SSE), JSON serialization
-    └── cli/       pull-lever command
+    └── http/      FastAPI app (HTTP + SSE), JSON serialization
 ```
 
 ## Rules
@@ -28,12 +27,12 @@ Tests are grouped by type, and each type mirrors the `src/workshop/` tree:
 
 ```text
 tests/
-├── conftest.py          shared fixtures (make_world, fake_clock)
+├── conftest.py          shared fixtures (make_world, fake_clock, sequence_clock)
 ├── unit/                one module at a time, no HTTP, no process boundary
 │   ├── domain/
 │   ├── engine/
 │   └── entrypoints/
-└── integration/         an entrypoint driven end to end (TestClient, CLI main)
+└── integration/         an entrypoint driven end to end (TestClient)
     └── entrypoints/
 ```
 

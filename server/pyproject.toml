@@ -7,9 +7,6 @@ dependencies = [
     "uvicorn>=0.54.0",
 ]
 
-[project.scripts]
-pull-lever = "workshop.entrypoints.cli.pull_lever:main"
-
 [build-system]
 requires = ["uv_build>=0.8,<0.9"]
 build-backend = "uv_build"
